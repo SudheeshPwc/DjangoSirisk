@@ -8,6 +8,7 @@ from rest_framework import generics
 from django.db import connection
 from django.http import JsonResponse
 from request.config import folder_structure
+from rest_framework import serializers
 import json
 # Create your views here.
 
@@ -23,15 +24,17 @@ class Transrequest(generics.CreateAPIView):
             ClientType=serializer.data.get('clienttype')
             ClientSubType=serializer.data.get('clientsubtype')
             RequestType=serializer.data.get('requesttype')
-            # if ClientName.isnumeric():
-            #     message = 'Client name should not have only integers'
-            #     raise serializer.ValidationError(message)
+            print(ClientName.isnumeric())
             cursor = connection.cursor()
             str_CAFID = str(CAFID)
             Clientid_name = str(ClientID)+'_'+str(ClientName)
             folderpath=folder_structure(str_CAFID, Clientid_name)
-            print(folderpath)
+
             sp = cursor.execute("set nocount on; EXEC	[dbo].[InsertNewRequest] @cafid='"+str(CAFID)+"',@clientid='"+str(ClientID)+"',@clientname='"+str(ClientName)+"',@clienttype= '"+str(ClientType)+"',@clientsubtype= '"+str(ClientSubType)+"',@requesttype='"+str(RequestType)+"',@filesharepath='"+str(folderpath)+"'")
+            if ClientName.isnumeric():
+                 print(ClientName.isnumeric())
+                 msg = 'Client name should not have only integers'
+                 raise serializers.ValidationError(msg)
             cursor.commit()
             rows = sp.fetchall()
             row_headers = [x[0] for x in cursor.description]
